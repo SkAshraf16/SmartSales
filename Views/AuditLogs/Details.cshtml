@@ -1,0 +1,19 @@
+@model AuditLog
+@{
+    ViewData["Title"] = "Audit Entry";
+}
+<h4 class="mb-3">Audit Entry #@Model.AuditLogId</h4>
+<div class="card">
+    <table class="table mb-0">
+        <tr><th class="ps-3" style="width:180px">Date &amp; Time</th><td>@Fmt.DtTm(Model.CreatedDate)</td></tr>
+        <tr><th class="ps-3">User</th><td>@(Model.UserName ?? "system") <small class="text-muted">@Model.UserId</small></td></tr>
+        <tr><th class="ps-3">Action</th><td>@Model.Action</td></tr>
+        <tr><th class="ps-3">Module / Entity</th><td>@Model.EntityName</td></tr>
+        <tr><th class="ps-3">Record Id</th><td>@Model.RecordId</td></tr>
+        <tr><th class="ps-3">Result</th><td>@Model.Result</td></tr>
+        <tr><th class="ps-3">IP Address</th><td>@Model.IpAddress</td></tr>
+        <tr><th class="ps-3">Old Value</th><td><pre class="mb-0 small text-wrap">@Model.OldValue</pre></td></tr>
+        <tr><th class="ps-3">New Value</th><td><pre class="mb-0 small text-wrap">@Model.NewValue</pre></td></tr>
+    </table>
+</div>
+<a asp-action="Index" class="btn btn-outline-secondary mt-3">Back</a>

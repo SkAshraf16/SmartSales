@@ -1,0 +1,28 @@
+@model (string Name, string[] Options, string? Selected)?
+@{
+    DateTime? from = ViewBag.From;
+    DateTime? to = ViewBag.To;
+}
+<form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-3">
+        <label class="form-label small mb-0">From</label>
+        <input type="date" name="from" value="@from?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label small mb-0">To</label>
+        <input type="date" name="to" value="@to?.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    @if (Model != null)
+    {
+        <div class="col-md-3">
+            <label class="form-label small mb-0">@Model.Value.Name</label>
+            <select name="@Model.Value.Name.ToLower()" class="form-select" asp-items="@(new SelectList(Model.Value.Options, Model.Value.Selected))">
+                <option value="">All</option>
+            </select>
+        </div>
+    }
+    <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-primary flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+        <button class="btn btn-outline-success" name="csv" value="true" title="Export CSV"><i class="bi bi-filetype-csv"></i> CSV</button>
+    </div>
+</form>

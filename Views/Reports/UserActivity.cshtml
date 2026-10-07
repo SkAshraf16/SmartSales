@@ -1,0 +1,28 @@
+@model List<object?[]>
+@{
+    ViewData["Title"] = "User Activity Report";
+}
+<h4 class="mb-3">User Activity Report</h4>
+@{
+    DateTime? from = ViewBag.From;
+    DateTime? to = ViewBag.To;
+}
+<form method="get" class="row g-2 mb-3 align-items-end">
+    <div class="col-md-3"><label class="form-label small mb-0">From</label>
+        <input type="date" name="from" value="@from?.ToString("yyyy-MM-dd")" class="form-control" /></div>
+    <div class="col-md-3"><label class="form-label small mb-0">To</label>
+        <input type="date" name="to" value="@to?.ToString("yyyy-MM-dd")" class="form-control" /></div>
+    <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-primary flex-fill"><i class="bi bi-funnel"></i> Filter</button>
+        <button class="btn btn-outline-success" name="csv" value="true"><i class="bi bi-filetype-csv"></i> CSV</button>
+    </div>
+</form>
+<div class="card">
+    <table class="table table-sm table-striped mb-0">
+        <thead class="table-light"><tr><th class="ps-3">User</th><th>Total Actions</th><th>Logins</th><th>Creates</th><th>Updates</th><th>Deletes</th></tr></thead>
+        @foreach (var r in Model)
+        {
+            <tr><td class="ps-3">@r[0]</td><td>@r[1]</td><td>@r[2]</td><td>@r[3]</td><td>@r[4]</td><td>@r[5]</td></tr>
+        }
+    </table>
+</div>

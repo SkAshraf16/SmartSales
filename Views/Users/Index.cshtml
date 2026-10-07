@@ -1,0 +1,65 @@
+@model List<UserListItemVm>
+@{
+    ViewData["Title"] = "Users";
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Users</h4>
+    @if (isAdmin)
+    {
+        <a asp-action="Create" class="btn btn-primary"><i class="bi bi-person-plus"></i> New User</a>
+    }
+</div>
+@if (!isAdmin)
+{
+    <div class="alert alert-info py-2 small">Manager view: read only. Only Admin can change users and roles.</div>
+}
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Search name or email" /></div>
+    <div class="col-md-3">
+        <select name="role" class="form-select" asp-items="@(new SelectList(Roles.All, ViewBag.Role))">
+            <option value="">All Roles</option>
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Search</button></div>
+</form>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Lockout</th><th>Failed</th><th>Created</th>@if (isAdmin) { <th></th> }</tr>
+            </thead>
+            <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.FullName</td>
+                    <td>@u.Email</td>
+                    <td><span class="badge bg-dark">@u.Role</span></td>
+                    <td><span class="badge @(u.IsActive ? "bg-success" : "bg-danger")">@(u.IsActive ? "Active" : "Inactive")</span></td>
+                    <td>@if (u.IsLockedOut) { <span class="badge bg-warning text-dark">Locked</span> } else { <span class="text-muted">-</span> }</td>
+                    <td>@u.FailedCount</td>
+                    <td>@Fmt.Dt(u.CreatedDate)</td>
+                    @if (isAdmin)
+                    {
+                        <td class="text-nowrap">
+                            <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <a asp-action="ResetPassword" asp-route-id="@u.Id" class="btn btn-sm btn-outline-secondary" title="Reset password"><i class="bi bi-key"></i></a>
+                            <form asp-action="ToggleActive" asp-route-id="@u.Id" method="post" class="d-inline" data-confirm="@(u.IsActive ? "Deactivate" : "Activate") @u.Email?">
+                                <button class="btn btn-sm @(u.IsActive ? "btn-outline-danger" : "btn-outline-success")" title="Activate / Deactivate">
+                                    <i class="bi @(u.IsActive ? "bi-person-dash" : "bi-person-check")"></i></button>
+                            </form>
+                            @if (u.IsLockedOut)
+                            {
+                                <form asp-action="Unlock" asp-route-id="@u.Id" method="post" class="d-inline">
+                                    <button class="btn btn-sm btn-warning" title="Unlock"><i class="bi bi-unlock"></i></button>
+                                </form>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

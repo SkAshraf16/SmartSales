@@ -1,0 +1,10 @@
+@foreach (var (key, css) in new[] { ("Success", "success"), ("Warning", "warning"), ("Error", "danger") })
+{
+    if (TempData[key] is string msg)
+    {
+        <div class="alert alert-@css alert-dismissible fade show" role="alert">
+            @msg
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+}

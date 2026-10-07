@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Permissions";
+    var rows = new[]
+    {
+        ("Dashboard", "Full", "Team", "Own / Assigned"),
+        ("Customers", "Full", "Team (no limit)", "Own / Assigned"),
+        ("Leads", "Full", "Team", "Own / Assigned"),
+        ("Opportunities", "Full", "Team", "Own / Assigned"),
+        ("Follow-Ups", "Full", "Team", "Own / Assigned"),
+        ("Activities", "Full", "Team", "Own / Assigned"),
+        ("Delete records", "Yes", "Yes", "No"),
+        ("User Management", "Full", "View only", "No"),
+        ("Role Management", "Full", "View only", "No"),
+        ("Audit Log", "Full", "No", "No"),
+        ("REST API", "Authorized endpoints", "Authorized endpoints", "Own data only"),
+        ("Reports", "All", "Management / Team", "Own / Assigned"),
+    };
+}
+<h4 class="mb-3">Permission Matrix</h4>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+            <thead class="table-light"><tr><th>Module</th><th>Admin</th><th>Manager</th><th>Sales Executive</th></tr></thead>
+            <tbody>
+            @foreach (var (m, a, mg, s) in rows)
+            {
+                <tr><td class="fw-semibold">@m</td><td>@a</td><td>@mg</td><td>@s</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+<p class="small text-muted mt-3">These rules are checked on the server with [Authorize(Roles = ...)] and the ForUser() filter, not only by hiding menu links.</p>

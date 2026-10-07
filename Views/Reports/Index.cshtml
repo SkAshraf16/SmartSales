@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Reports";
+    var mgr = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager);
+    var list = new List<(string Action, string Title, string Desc, string Icon)>
+    {
+        ("Customers", "Customer Report", "Customer list with status, owner and creation date.", "bi-people"),
+        ("Leads", "Lead Report", "Lead source, status, owner and conversion details.", "bi-person-plus"),
+        ("FollowUps", "Follow-Up Report", "Planned, completed, missed and overdue follow-ups.", "bi-calendar-check"),
+        ("Opportunities", "Opportunity Report", "Stage, amount, probability and expected close date.", "bi-briefcase"),
+        ("Pipeline", "Pipeline Report", "Stage wise and owner wise pipeline with weighted value.", "bi-kanban"),
+        ("Conversion", "Sales / Conversion Report", "Lead conversion and opportunity win/loss numbers.", "bi-graph-up"),
+    };
+    if (mgr) list.Add(("UserActivity", "User Activity Report", "Actions done by each user (from audit log).", "bi-person-lines-fill"));
+}
+<h4 class="mb-3">Reports</h4>
+@if (User.IsSalesExecutive())
+{
+    <div class="alert alert-info py-2 small">Reports show only your assigned records.</div>
+}
+<div class="row g-3">
+    @foreach (var r in list)
+    {
+        <div class="col-md-6 col-xl-4">
+            <a asp-action="@r.Action" class="text-decoration-none text-reset">
+                <div class="card h-100"><div class="card-body">
+                    <h5><i class="bi @r.Icon text-primary"></i> @r.Title</h5>
+                    <p class="text-muted small mb-0">@r.Desc</p>
+                </div></div>
+            </a>
+        </div>
+    }
+    @if (User.IsInRole(Roles.Admin))
+    {
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="AuditLogs" asp-action="Index" class="text-decoration-none text-reset">
+                <div class="card h-100"><div class="card-body">
+                    <h5><i class="bi bi-journal-text text-primary"></i> Audit Report</h5>
+                    <p class="text-muted small mb-0">Security and business audit events with filters and CSV export.</p>
+                </div></div>
+            </a>
+        </div>
+    }
+</div>

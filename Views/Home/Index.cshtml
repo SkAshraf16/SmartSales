@@ -1,0 +1,169 @@
+@model DashboardVm
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+    var ranges = new[] { ("all", "All Time"), ("today", "Today"), ("week", "This Week"), ("month", "This Month") };
+    var cards = new[]
+    {
+        ("Total Customers", Model.TotalCustomers.ToString(), "bi-people", "primary"),
+        ("Total Leads", Model.TotalLeads.ToString(), "bi-person-plus", "info"),
+        ("Open Leads", Model.OpenLeads.ToString(), "bi-hourglass-split", "secondary"),
+        ("Total Opportunities", Model.TotalOpportunities.ToString(), "bi-briefcase", "dark"),
+        ("Open Opportunities", Model.OpenOpportunities.ToString(), "bi-folder2-open", "warning"),
+        ("Won Opportunities", Model.WonOpportunities.ToString(), "bi-trophy", "success"),
+        ("Lost Opportunities", Model.LostOpportunities.ToString(), "bi-x-octagon", "danger"),
+        ("Total Pipeline Value", Fmt.Inr(Model.PipelineValue), "bi-currency-rupee", "primary"),
+    };
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h4 class="m-0">Dashboard</h4>
+    <form method="get" class="d-flex flex-wrap gap-2 align-items-center">
+        <div class="btn-group btn-group-sm">
+            @foreach (var (key, label) in ranges)
+            {
+                <a class="btn btn-outline-primary @(Model.Range == key ? "active" : "")" href="?range=@key">@label</a>
+            }
+        </div>
+        <input type="hidden" name="range" value="custom" />
+        <input type="date" name="from" class="form-control form-control-sm" style="width:auto" value="@Context.Request.Query["from"]" />
+        <input type="date" name="to" class="form-control form-control-sm" style="width:auto" value="@Context.Request.Query["to"]" />
+        <button class="btn btn-sm btn-primary">Apply</button>
+    </form>
+</div>
+
+<div class="row g-3 mb-3">
+    @foreach (var (label, val, icon, color) in cards)
+    {
+        <div class="col-6 col-md-4 col-xl-3">
+            <div class="card kpi h-100">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="fs-2 text-@color"><i class="bi @icon"></i></div>
+                    <div>
+                        <div class="val">@val</div>
+                        <div class="lbl">@label</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="card kpi"><div class="card-body">
+            <div class="lbl">Weighted Pipeline</div><div class="val">@Fmt.Inr(Model.WeightedPipeline)</div>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <a class="text-decoration-none text-reset" asp-controller="FollowUps" asp-action="Index" asp-route-view="pending">
+            <div class="card kpi"><div class="card-body">
+                <div class="lbl">Pending Follow-Ups</div><div class="val">@Model.PendingFollowUps</div>
+            </div></div>
+        </a>
+    </div>
+    <div class="col-md-4">
+        <a class="text-decoration-none text-reset" asp-controller="FollowUps" asp-action="Index" asp-route-view="overdue">
+            <div class="card kpi"><div class="card-body">
+                <div class="lbl">Overdue Follow-Ups</div><div class="val text-danger">@Model.OverdueFollowUps</div>
+            </div></div>
+        </a>
+    </div>
+</div>
+
+@if (Model.TotalUsers != null)
+{
+    <div class="alert alert-secondary py-2 small">
+        <i class="bi bi-shield-check"></i> Admin view: <strong>@Model.TotalUsers</strong> users,
+        <strong>@Model.FailedLoginsToday</strong> failed login attempt(s) today.
+        <a asp-controller="AuditLogs" asp-action="Index">Open audit log</a>
+    </div>
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-header">Lead Status</div>
+            <div class="card-body"><canvas id="leadChart" height="220"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-header">Opportunity Pipeline (₹)</div>
+            <div class="card-body"><canvas id="pipeChart" height="220"></canvas></div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100"><div class="card-header">Monthly Sales - Won (₹)</div>
+            <div class="card-body"><canvas id="salesChart" height="220"></canvas></div></div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-@(Model.RecentActivity.Any() ? "6" : "12")">
+        <div class="card h-100">
+            <div class="card-header">Upcoming Follow-Ups</div>
+            <ul class="list-group list-group-flush">
+                @if (!Model.UpcomingFollowUps.Any())
+                {
+                    <li class="list-group-item text-muted">No pending follow-ups.</li>
+                }
+                @foreach (var f in Model.UpcomingFollowUps)
+                {
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>@f.Subject <small class="text-muted">- @(f.Customer?.CustomerName ?? f.Lead?.LeadName)</small></span>
+                        <span class="badge @(f.IsOverdue ? "bg-danger" : "bg-primary")">@Fmt.Dt(f.FollowUpDate)</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+    @if (Model.RecentActivity.Any())
+    {
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header">Recent Activity (Audit)</div>
+                <ul class="list-group list-group-flush small">
+                    @foreach (var a in Model.RecentActivity)
+                    {
+                        <li class="list-group-item">
+                            <span class="badge @Fmt.Badge(a.Result)">@a.Action</span> @a.EntityName @a.RecordId
+                            <span class="text-muted">by @(a.UserName ?? "system") - @Fmt.DtTm(a.CreatedDate)</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        var leadData = @Html.Raw(JsonSerializer.Serialize(Model.LeadStatusChart));
+        var pipeData = @Html.Raw(JsonSerializer.Serialize(Model.PipelineChart));
+        var salesData = @Html.Raw(JsonSerializer.Serialize(Model.MonthlySalesChart));
+
+        new Chart(document.getElementById('leadChart'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(leadData),
+                datasets: [{ data: Object.values(leadData), backgroundColor: ['#0d6efd', '#0dcaf0', '#198754', '#dc3545', '#6f42c1'] }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('pipeChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(pipeData),
+                datasets: [{ label: 'Amount', data: Object.values(pipeData), backgroundColor: ['#0d6efd', '#0dcaf0', '#ffc107', '#198754', '#dc3545'] }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('salesChart'), {
+            type: 'line',
+            data: {
+                labels: Object.keys(salesData),
+                datasets: [{ label: 'Won', data: Object.values(salesData), borderColor: '#198754', backgroundColor: 'rgba(25,135,84,.15)', fill: true, tension: .3 }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        });
+    </script>
+}

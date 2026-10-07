@@ -1,0 +1,26 @@
+@model List<(string Role, int Count)>
+@{
+    ViewData["Title"] = "Roles";
+    var desc = new Dictionary<string, string>
+    {
+        [Roles.Admin] = "Full administration - users, roles, audit logs, all CRM records and reports.",
+        [Roles.Manager] = "Manages team customers, leads, opportunities, follow-ups and management reports. No security administration.",
+        [Roles.Sales] = "Manages only assigned customers, leads, opportunities, follow-ups and activities."
+    };
+}
+<h4 class="mb-3">Roles</h4>
+<div class="row g-3">
+    @foreach (var (role, count) in Model)
+    {
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5><i class="bi bi-shield-lock"></i> @role</h5>
+                    <p class="text-muted small">@(desc.TryGetValue(role, out var d) ? d : "")</p>
+                    <span class="badge bg-primary">@count user(s)</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<p class="small text-muted mt-3">Each user has exactly one primary role. Admin changes a user's role from the Users page.</p>

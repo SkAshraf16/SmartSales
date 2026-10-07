@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Pipeline Report";
+    var byStage = (List<object?[]>)ViewBag.ByStage;
+    var byOwner = (List<object?[]>)ViewBag.ByOwner;
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Pipeline Report</h4>
+    <a asp-action="Pipeline" asp-route-csv="true" class="btn btn-outline-success"><i class="bi bi-filetype-csv"></i> Export CSV</a>
+</div>
+<p class="small text-muted">Weighted amount = Amount &times; Probability / 100</p>
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">Stage wise</div>
+            <table class="table table-sm mb-0">
+                <thead><tr><th class="ps-3">Stage</th><th>Count</th><th>Amount</th><th>Weighted</th></tr></thead>
+                @foreach (var r in byStage)
+                {
+                    <tr><td class="ps-3">@r[0]</td><td>@r[1]</td><td>@Fmt.Inr((decimal)r[2]!)</td><td>@Fmt.Inr((decimal)r[3]!)</td></tr>
+                }
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">Owner wise (open opportunities)</div>
+            <table class="table table-sm mb-0">
+                <thead><tr><th class="ps-3">Owner</th><th>Count</th><th>Amount</th><th>Weighted</th></tr></thead>
+                @foreach (var r in byOwner)
+                {
+                    <tr><td class="ps-3">@r[0]</td><td>@r[1]</td><td>@Fmt.Inr((decimal)r[2]!)</td><td>@Fmt.Inr((decimal)r[3]!)</td></tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>

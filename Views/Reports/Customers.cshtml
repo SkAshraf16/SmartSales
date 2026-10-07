@@ -1,0 +1,21 @@
+@model List<Customer>
+@{
+    ViewData["Title"] = "Customer Report";
+}
+<h4 class="mb-3">Customer Report</h4>
+<partial name="_Filter" model="@(((string, string[], string?)?)("Status", Enum.GetNames<CustomerStatus>(), ViewBag.Status?.ToString()))" />
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-striped mb-0">
+            <thead class="table-light"><tr><th>Code</th><th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Status</th><th>Owner</th><th>Created</th></tr></thead>
+            <tbody>
+            @foreach (var c in Model)
+            {
+                <tr><td>@c.CustomerCode</td><td>@c.CustomerName</td><td>@c.CompanyName</td><td>@c.Email</td><td>@c.Phone</td>
+                    <td>@c.Status</td><td>@c.AssignedUser?.FullName</td><td>@Fmt.Dt(c.CreatedDate)</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer small">Total: @Model.Count | Active: @Model.Count(c => c.Status == CustomerStatus.Active)</div>
+</div>

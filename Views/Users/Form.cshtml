@@ -1,0 +1,54 @@
+@model UserFormVm
+@{
+    var isNew = string.IsNullOrEmpty(Model.Id);
+    ViewData["Title"] = isNew ? "New User" : "Edit User";
+}
+<h4 class="mb-3">@ViewData["Title"]</h4>
+<div class="card" style="max-width:720px">
+    <div class="card-body">
+        <form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@Model.Id" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FullName" class="form-label req"></label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label req"></label>
+                    <input asp-for="Email" class="form-control" type="text" />
+                    <span asp-validation-for="Email"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" maxlength="10" />
+                    <span asp-validation-for="Phone"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Role" class="form-label req"></label>
+                    <select asp-for="Role" class="form-select" asp-items="@(new SelectList(Roles.All))"></select>
+                    <span asp-validation-for="Role"></span>
+                </div>
+                @if (isNew)
+                {
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label req"></label>
+                        <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="Password"></span>
+                    </div>
+                }
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

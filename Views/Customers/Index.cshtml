@@ -1,0 +1,68 @@
+@model PagedResult<Customer>
+@{
+    ViewData["Title"] = "Customers";
+    var canDelete = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager);
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Customers</h4>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Customer</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Search name, email, phone, company..." /></div>
+    <div class="col-md-3">
+        <select name="status" class="form-select" asp-items="@(new SelectList(Enum.GetNames<CustomerStatus>(), ViewBag.Status?.ToString()))">
+            <option value="">All Status</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="sort" class="form-select">
+            <option value="newest" selected="@(ViewBag.Sort == "newest")">Newest first</option>
+            <option value="oldest" selected="@(ViewBag.Sort == "oldest")">Oldest first</option>
+            <option value="name" selected="@(ViewBag.Sort == "name")">Name A-Z</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-outline-primary flex-fill"><i class="bi bi-search"></i> Search</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Code</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th><th>Status</th><th>Owner</th><th>Created</th><th></th></tr>
+            </thead>
+            <tbody>
+            @if (!Model.Items.Any())
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">No customers found.</td></tr>
+            }
+            @foreach (var c in Model.Items)
+            {
+                <tr>
+                    <td>@c.CustomerCode</td>
+                    <td><a asp-action="Details" asp-route-id="@c.CustomerId">@c.CustomerName</a></td>
+                    <td>@c.Email</td>
+                    <td>@c.Phone</td>
+                    <td>@c.CompanyName</td>
+                    <td><span class="badge @Fmt.Badge(c.Status.ToString())">@c.Status</span></td>
+                    <td>@c.AssignedUser?.FullName</td>
+                    <td>@Fmt.Dt(c.CreatedDate)</td>
+                    <td class="text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@c.CustomerId" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                        @if (canDelete)
+                        {
+                            <form asp-action="Delete" asp-route-id="@c.CustomerId" method="post" class="d-inline" data-confirm="Delete customer @c.CustomerName?">
+                                <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+<partial name="_Pager" model="Model" />

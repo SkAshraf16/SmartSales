@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Conversion Report";
+    int total = ViewBag.TotalLeads, conv = ViewBag.Converted, won = ViewBag.Won, lostOpps = ViewBag.LostOpps;
+    var convRate = total == 0 ? 0 : conv * 100.0 / total;
+    var winRate = won + lostOpps == 0 ? 0 : won * 100.0 / (won + lostOpps);
+    var bySource = (List<object?[]>)ViewBag.BySource;
+}
+<h4 class="mb-3">Sales / Conversion Report</h4>
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Total Leads</div><div class="val">@total</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Converted</div><div class="val text-success">@conv</div><small>@convRate.ToString("0.0")% conversion</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Won / Lost Deals</div><div class="val">@won / @lostOpps</div><small>@winRate.ToString("0.0")% win rate</small></div></div></div>
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Won Value</div><div class="val">@Fmt.Inr((decimal)ViewBag.WonValue)</div></div></div></div>
+</div>
+<div class="card">
+    <div class="card-header">Conversion by Lead Source</div>
+    <table class="table table-sm mb-0">
+        <thead><tr><th class="ps-3">Source</th><th>Leads</th><th>Converted</th><th>Rate</th></tr></thead>
+        @foreach (var r in bySource)
+        {
+            var t = (int)r[1]!;
+            var c = (int)r[2]!;
+            <tr><td class="ps-3">@r[0]</td><td>@t</td><td>@c</td><td>@((c * 100.0 / t).ToString("0.0"))%</td></tr>
+        }
+    </table>
+</div>

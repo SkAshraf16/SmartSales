@@ -1,0 +1,83 @@
+@model PagedResult<Activity>
+@{
+    ViewData["Title"] = "Activities";
+    var canDelete = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager);
+    DateTime? date = ViewBag.Date;
+    var icons = new Dictionary<ActivityType, string>
+    {
+        [ActivityType.Call] = "bi-telephone", [ActivityType.Meeting] = "bi-people",
+        [ActivityType.Email] = "bi-envelope", [ActivityType.Task] = "bi-check2-square"
+    };
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h4 class="m-0">Activities</h4>
+    <div class="d-flex gap-2">
+        @foreach (var t in Enum.GetValues<ActivityType>())
+        {
+            <a asp-action="Create" asp-route-type="@t" class="btn btn-sm btn-outline-primary"><i class="bi @icons[t]"></i> @t</a>
+        }
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-2">
+        <select name="type" class="form-select" asp-items="@(new SelectList(Enum.GetNames<ActivityType>(), ViewBag.Type?.ToString()))">
+            <option value="">All Types</option>
+        </select>
+    </div>
+    <div class="col-md-2"><input type="date" name="date" value="@date?.ToString("yyyy-MM-dd")" class="form-control" /></div>
+    <div class="col-md-2">
+        <select name="status" class="form-select" asp-items="@(new SelectList(Enum.GetNames<ActivityStatus>(), ViewBag.Status?.ToString()))">
+            <option value="">All Status</option>
+        </select>
+    </div>
+    @if (!User.IsSalesExecutive())
+    {
+        <div class="col-md-3">
+            <select name="assignedTo" class="form-select" asp-items="@(new SelectList((IEnumerable<SelectListItem>)ViewBag.Users, "Value", "Text", ViewBag.AssignedTo))">
+                <option value="">All Users</option>
+            </select>
+        </div>
+    }
+    <div class="col-md-3 d-flex gap-2">
+        <button class="btn btn-outline-primary flex-fill"><i class="bi bi-search"></i> Filter</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Date</th><th>Type</th><th>Subject</th><th>Related To</th><th>Status</th><th>Assigned To</th><th></th></tr>
+            </thead>
+            <tbody>
+            @if (!Model.Items.Any())
+            {
+                <tr><td colspan="7" class="text-center text-muted py-4">No activities found.</td></tr>
+            }
+            @foreach (var a in Model.Items)
+            {
+                <tr>
+                    <td>@Fmt.Dt(a.ActivityDate)</td>
+                    <td><i class="bi @icons[a.ActivityType]"></i> @a.ActivityType</td>
+                    <td>@a.Subject</td>
+                    <td>@(a.Customer?.CustomerName ?? a.Lead?.LeadName)</td>
+                    <td><span class="badge @Fmt.Badge(a.Status.ToString())">@a.Status</span></td>
+                    <td>@a.AssignedUser?.FullName</td>
+                    <td class="text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@a.ActivityId" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        @if (canDelete)
+                        {
+                            <form asp-action="Delete" asp-route-id="@a.ActivityId" method="post" class="d-inline" data-confirm="Delete this activity?">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+<partial name="_Pager" model="Model" />

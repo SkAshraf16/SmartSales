@@ -1,0 +1,23 @@
+@model List<Opportunity>
+@{
+    ViewData["Title"] = "Opportunity Report";
+}
+<h4 class="mb-3">Opportunity Report <small class="text-muted fs-6">(filter by expected close date)</small></h4>
+<partial name="_Filter" model="@(((string, string[], string?)?)("Stage", Enum.GetNames<OpportunityStage>(), ViewBag.Stage?.ToString()))" />
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-striped mb-0">
+            <thead class="table-light"><tr><th>Opportunity</th><th>Customer</th><th>Stage</th><th>Amount</th><th>Probability</th><th>Weighted</th><th>Expected Close</th><th>Owner</th></tr></thead>
+            <tbody>
+            @foreach (var o in Model)
+            {
+                <tr><td>@o.OpportunityName</td><td>@o.Customer?.CustomerName</td><td>@o.Stage</td><td>@Fmt.Inr(o.Amount)</td>
+                    <td>@o.Probability%</td><td>@Fmt.Inr(o.WeightedAmount)</td><td>@Fmt.Dt(o.ExpectedCloseDate)</td><td>@o.AssignedUser?.FullName</td></tr>
+            }
+            </tbody>
+            <tfoot class="table-light fw-semibold">
+            <tr><td colspan="3">Total (@Model.Count)</td><td>@Fmt.Inr(Model.Sum(o => o.Amount))</td><td></td><td>@Fmt.Inr(Model.Sum(o => o.WeightedAmount))</td><td colspan="2"></td></tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

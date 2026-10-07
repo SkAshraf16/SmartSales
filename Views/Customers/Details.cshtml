@@ -1,0 +1,80 @@
+@model Customer
+@{
+    ViewData["Title"] = Model.CustomerName;
+    var canDelete = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager);
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h4 class="m-0">@Model.CustomerName <small class="text-muted">@Model.CustomerCode</small>
+        <span class="badge @Fmt.Badge(Model.Status.ToString())">@Model.Status</span></h4>
+    <div class="d-flex gap-2">
+        <a asp-controller="Opportunities" asp-action="Create" asp-route-customerId="@Model.CustomerId" class="btn btn-sm btn-success"><i class="bi bi-briefcase"></i> Add Opportunity</a>
+        <a asp-controller="FollowUps" asp-action="Create" asp-route-customerId="@Model.CustomerId" class="btn btn-sm btn-info"><i class="bi bi-calendar-plus"></i> Follow-Up</a>
+        <a asp-controller="Activities" asp-action="Create" asp-route-customerId="@Model.CustomerId" class="btn btn-sm btn-secondary"><i class="bi bi-telephone-plus"></i> Log Activity</a>
+        <a asp-action="Edit" asp-route-id="@Model.CustomerId" class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+        @if (canDelete)
+        {
+            <form asp-action="Delete" asp-route-id="@Model.CustomerId" method="post" data-confirm="Delete this customer?">
+                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">Customer Details</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Email</th><td>@Model.Email</td></tr>
+                <tr><th class="ps-3">Phone</th><td>@Model.Phone</td></tr>
+                <tr><th class="ps-3">Company</th><td>@Model.CompanyName</td></tr>
+                <tr><th class="ps-3">Address</th><td>@Model.Address @Model.City @Model.State</td></tr>
+                <tr><th class="ps-3">Owner</th><td>@Model.AssignedUser?.FullName</td></tr>
+                <tr><th class="ps-3">Created</th><td>@Fmt.Dt(Model.CreatedDate) by @Model.CreatedBy</td></tr>
+                <tr><th class="ps-3">Modified</th><td>@Fmt.Dt(Model.ModifiedDate)</td></tr>
+                <tr><th class="ps-3">Notes</th><td>@Model.Notes</td></tr>
+            </table>
+        </div>
+        <partial name="_History" model="(List<AuditLog>)ViewBag.History" />
+    </div>
+    <div class="col-lg-7">
+        <div class="card mb-3">
+            <div class="card-header">Opportunities</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Name</th><th>Stage</th><th>Amount</th><th>Close Date</th></tr>
+                @foreach (var o in Model.Opportunities)
+                {
+                    <tr>
+                        <td class="ps-3"><a asp-controller="Opportunities" asp-action="Details" asp-route-id="@o.OpportunityId">@o.OpportunityName</a></td>
+                        <td><span class="badge @Fmt.Badge(o.Stage.ToString())">@o.Stage</span></td>
+                        <td>@Fmt.Inr(o.Amount)</td>
+                        <td>@Fmt.Dt(o.ExpectedCloseDate)</td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">Follow-Ups</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Date</th><th>Subject</th><th>Type</th><th>Status</th></tr>
+                @foreach (var f in Model.FollowUps.OrderByDescending(x => x.FollowUpDate))
+                {
+                    <tr>
+                        <td class="ps-3">@Fmt.Dt(f.FollowUpDate)</td><td>@f.Subject</td><td>@f.FollowUpType</td>
+                        <td><span class="badge @(f.IsOverdue ? "bg-danger" : Fmt.Badge(f.Status.ToString()))">@(f.IsOverdue ? "Overdue" : f.Status.ToString())</span></td>
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="card">
+            <div class="card-header">Activities</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Date</th><th>Type</th><th>Subject</th><th>Status</th></tr>
+                @foreach (var a in Model.Activities.OrderByDescending(x => x.ActivityDate))
+                {
+                    <tr><td class="ps-3">@Fmt.Dt(a.ActivityDate)</td><td>@a.ActivityType</td><td>@a.Subject</td><td>@a.Status</td></tr>
+                }
+            </table>
+        </div>
+    </div>
+</div>

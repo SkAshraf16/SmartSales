@@ -1,0 +1,21 @@
+@model List<Lead>
+@{
+    ViewData["Title"] = "Lead Report";
+}
+<h4 class="mb-3">Lead Report</h4>
+<partial name="_Filter" model="@(((string, string[], string?)?)("Status", Enum.GetNames<LeadStatus>(), ViewBag.Status?.ToString()))" />
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-striped mb-0">
+            <thead class="table-light"><tr><th>Code</th><th>Name</th><th>Source</th><th>Status</th><th>Priority</th><th>Expected Value</th><th>Owner</th><th>Created</th><th>Converted On</th></tr></thead>
+            <tbody>
+            @foreach (var l in Model)
+            {
+                <tr><td>@l.LeadCode</td><td>@l.LeadName</td><td>@l.Source</td><td>@l.Status</td><td>@l.Priority</td>
+                    <td>@Fmt.Inr(l.ExpectedValue)</td><td>@l.AssignedUser?.FullName</td><td>@Fmt.Dt(l.CreatedDate)</td><td>@Fmt.Dt(l.ConvertedDate)</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer small">Total: @Model.Count | Converted: @Model.Count(l => l.Status == LeadStatus.Converted)</div>
+</div>

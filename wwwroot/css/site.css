@@ -1,0 +1,20 @@
+body { background: #f5f7fb; min-height: 100vh; display: flex; flex-direction: column; }
+.main-area { min-width: 0; }
+.sidebar { width: 230px; min-height: calc(100vh - 56px); }
+.sidebar .nav-link { color: #333; padding: .55rem 1.1rem; border-left: 3px solid transparent; }
+.sidebar .nav-link i { width: 1.4rem; display: inline-block; }
+.sidebar .nav-link:hover { background: #e9ecef; }
+.sidebar .nav-link.active { background: #e7f0ff; color: #0d6efd; border-left-color: #0d6efd; font-weight: 600; }
+.sidebar .nav-header { font-size: .75rem; text-transform: uppercase; color: #888; padding: .8rem 1.1rem .3rem; }
+.kpi { border: 0; border-radius: .6rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.kpi .val { font-size: 1.6rem; font-weight: 700; }
+.kpi .lbl { font-size: .8rem; color: #6c757d; text-transform: uppercase; }
+.card { box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+.field-validation-error, .validation-summary-errors { color: #dc3545; font-size: .85rem; }
+.input-validation-error { border-color: #dc3545 !important; }
+.req::after { content: " *"; color: #dc3545; }
+.pipe-col { min-width: 230px; }
+.pipe-card { font-size: .875rem; }
+.table td, .table th { vertical-align: middle; }
+.auth-box { max-width: 440px; margin: 0 auto; }
+@media (max-width: 991.98px) { .sidebar { min-height: auto; } }

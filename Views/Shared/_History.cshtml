@@ -1,0 +1,21 @@
+@model List<AuditLog>
+<div class="card mt-3">
+    <div class="card-header"><i class="bi bi-clock-history"></i> Change History</div>
+    <ul class="list-group list-group-flush small">
+        @if (!Model.Any())
+        {
+            <li class="list-group-item text-muted">No history.</li>
+        }
+        @foreach (var h in Model)
+        {
+            <li class="list-group-item">
+                <span class="badge @Fmt.Badge(h.Action == "Delete" ? "Lost" : h.Action == "Create" ? "Won" : "Contacted")">@h.Action</span>
+                <strong>@(h.UserName ?? "system")</strong> on @Fmt.DtTm(h.CreatedDate)
+                @if (h.Action == "Update" && h.NewValue != null)
+                {
+                    <div class="text-muted text-break">@h.OldValue &rarr; @h.NewValue</div>
+                }
+            </li>
+        }
+    </ul>
+</div>

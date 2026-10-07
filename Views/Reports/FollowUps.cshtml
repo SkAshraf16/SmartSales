@@ -1,0 +1,26 @@
+@model List<FollowUp>
+@{
+    ViewData["Title"] = "Follow-Up Report";
+}
+<h4 class="mb-3">Follow-Up Report</h4>
+<partial name="_Filter" model="@(((string, string[], string?)?)("Status", Enum.GetNames<FollowUpStatus>(), ViewBag.Status?.ToString()))" />
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Planned</div><div class="val">@Model.Count(f => f.Status == FollowUpStatus.Planned)</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Completed</div><div class="val text-success">@Model.Count(f => f.Status == FollowUpStatus.Completed)</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Missed</div><div class="val text-warning">@Model.Count(f => f.Status == FollowUpStatus.Missed)</div></div></div></div>
+    <div class="col-6 col-md-3"><div class="card kpi"><div class="card-body"><div class="lbl">Overdue</div><div class="val text-danger">@Model.Count(f => f.IsOverdue)</div></div></div></div>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-striped mb-0">
+            <thead class="table-light"><tr><th>Date</th><th>Subject</th><th>Type</th><th>Related To</th><th>Status</th><th>Owner</th></tr></thead>
+            <tbody>
+            @foreach (var f in Model)
+            {
+                <tr class="@(f.IsOverdue ? "table-danger" : "")"><td>@Fmt.Dt(f.FollowUpDate)</td><td>@f.Subject</td><td>@f.FollowUpType</td>
+                    <td>@(f.Customer?.CustomerName ?? f.Lead?.LeadName)</td><td>@(f.IsOverdue ? "Overdue" : f.Status.ToString())</td><td>@f.AssignedUser?.FullName</td></tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

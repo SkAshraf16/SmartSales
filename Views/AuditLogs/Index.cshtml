@@ -1,0 +1,52 @@
+@model PagedResult<AuditLog>
+@{
+    ViewData["Title"] = "Audit Log";
+    DateTime? from = ViewBag.From;
+    DateTime? to = ViewBag.To;
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Audit Log</h4>
+    <a class="btn btn-outline-success" href="@Url.Action("Export")@Context.Request.QueryString"><i class="bi bi-filetype-csv"></i> Export CSV</a>
+</div>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3"><input name="user" value="@ViewBag.User" class="form-control" placeholder="User email" /></div>
+    <div class="col-md-2">
+        <select name="entity" class="form-select" asp-items="@(new SelectList((List<string>)ViewBag.Entities, ViewBag.Entity))">
+            <option value="">All Modules</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="act" class="form-select" asp-items="@(new SelectList((List<string>)ViewBag.Actions, ViewBag.Act))">
+            <option value="">All Actions</option>
+        </select>
+    </div>
+    <div class="col-md-2"><input type="date" name="from" value="@from?.ToString("yyyy-MM-dd")" class="form-control" title="From" /></div>
+    <div class="col-md-2"><input type="date" name="to" value="@to?.ToString("yyyy-MM-dd")" class="form-control" title="To" /></div>
+    <div class="col-md-1"><button class="btn btn-outline-primary w-100"><i class="bi bi-funnel"></i></button></div>
+</form>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>#</th><th>Date &amp; Time</th><th>User</th><th>Action</th><th>Module</th><th>Record</th><th>Result</th><th>IP</th><th></th></tr>
+            </thead>
+            <tbody>
+            @foreach (var a in Model.Items)
+            {
+                <tr>
+                    <td>@a.AuditLogId</td>
+                    <td class="text-nowrap">@Fmt.DtTm(a.CreatedDate)</td>
+                    <td>@(a.UserName ?? "system")</td>
+                    <td>@a.Action</td>
+                    <td>@a.EntityName</td>
+                    <td>@a.RecordId</td>
+                    <td><span class="badge @Fmt.Badge(a.Result)">@a.Result</span></td>
+                    <td>@a.IpAddress</td>
+                    <td><a asp-action="Details" asp-route-id="@a.AuditLogId" class="btn btn-sm btn-outline-secondary py-0">View</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+<partial name="_Pager" model="Model" />

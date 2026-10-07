@@ -1,0 +1,74 @@
+@model FollowUpFormVm
+@{
+    var isNew = Model.FollowUpId == 0;
+    ViewData["Title"] = isNew ? "Schedule Follow-Up" : "Edit / Reschedule Follow-Up";
+}
+<h4 class="mb-3">@ViewData["Title"]</h4>
+<div class="card">
+    <div class="card-body">
+        <form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.FollowUpId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+            <input type="hidden" asp-for="FollowUpId" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="CustomerId" class="form-label"></label>
+                    <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+                        <option value="">-- None --</option>
+                    </select>
+                    <span asp-validation-for="CustomerId"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="LeadId" class="form-label"></label>
+                    <select asp-for="LeadId" class="form-select" asp-items="ViewBag.Leads">
+                        <option value="">-- None --</option>
+                    </select>
+                    <div class="form-text">Select a customer or a lead (at least one).</div>
+                    <span asp-validation-for="LeadId"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="Subject" class="form-label req"></label>
+                    <input asp-for="Subject" class="form-control" maxlength="150" />
+                    <span asp-validation-for="Subject"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="FollowUpType" class="form-label req"></label>
+                    <select asp-for="FollowUpType" class="form-select" asp-items="@(new SelectList(Enum.GetNames<FollowUpType>()))"></select>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="FollowUpDate" class="form-label req"></label>
+                    <input asp-for="FollowUpDate" class="form-control" />
+                    <span asp-validation-for="FollowUpDate"></span>
+                </div>
+                @if (!isNew)
+                {
+                    <div class="col-md-4">
+                        <label asp-for="Status" class="form-label req"></label>
+                        <select asp-for="Status" class="form-select" asp-items="@(new SelectList(Enum.GetNames<FollowUpStatus>()))"></select>
+                    </div>
+                }
+                else
+                {
+                    <input type="hidden" asp-for="Status" />
+                }
+                @if (!User.IsSalesExecutive())
+                {
+                    <div class="col-md-4">
+                        <label asp-for="AssignedTo" class="form-label"></label>
+                        <select asp-for="AssignedTo" class="form-select" asp-items="ViewBag.Users">
+                            <option value="">-- Myself --</option>
+                        </select>
+                        <span asp-validation-for="AssignedTo"></span>
+                    </div>
+                }
+                <div class="col-12">
+                    <label asp-for="Remarks" class="form-label"></label>
+                    <textarea asp-for="Remarks" class="form-control" rows="3" maxlength="1000"></textarea>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

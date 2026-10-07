@@ -1,0 +1,81 @@
+@model Lead
+@{
+    ViewData["Title"] = Model.LeadName;
+    var canDelete = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager);
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h4 class="m-0">@Model.LeadName <small class="text-muted">@Model.LeadCode</small>
+        <span class="badge @Fmt.Badge(Model.Status.ToString())">@Model.Status</span></h4>
+    <div class="d-flex gap-2">
+        @if (Model.Status == LeadStatus.Qualified)
+        {
+            <form asp-action="Convert" asp-route-id="@Model.LeadId" method="post" data-confirm="Convert this lead into a customer and opportunity?">
+                <button class="btn btn-sm btn-success"><i class="bi bi-arrow-repeat"></i> Convert to Customer</button>
+            </form>
+        }
+        @if (Model.Status != LeadStatus.Converted)
+        {
+            <a asp-controller="FollowUps" asp-action="Create" asp-route-leadId="@Model.LeadId" class="btn btn-sm btn-info"><i class="bi bi-calendar-plus"></i> Follow-Up</a>
+            <a asp-controller="Activities" asp-action="Create" asp-route-leadId="@Model.LeadId" class="btn btn-sm btn-secondary"><i class="bi bi-telephone-plus"></i> Log Activity</a>
+            <a asp-action="Edit" asp-route-id="@Model.LeadId" class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+        }
+        @if (canDelete)
+        {
+            <form asp-action="Delete" asp-route-id="@Model.LeadId" method="post" data-confirm="Delete this lead?">
+                <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (Model.Status != LeadStatus.Qualified && Model.Status != LeadStatus.Converted)
+{
+    <div class="alert alert-info py-2 small">Workflow: New &rarr; Contacted &rarr; Qualified &rarr; Convert. Mark the lead as <strong>Qualified</strong> to enable conversion.</div>
+}
+@if (Model.ConvertedCustomerId != null)
+{
+    <div class="alert alert-success py-2 small">Converted on @Fmt.Dt(Model.ConvertedDate).
+        <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.ConvertedCustomerId">View customer</a></div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">Lead Details</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Email</th><td>@Model.Email</td></tr>
+                <tr><th class="ps-3">Phone</th><td>@Model.Phone</td></tr>
+                <tr><th class="ps-3">Company</th><td>@Model.CompanyName</td></tr>
+                <tr><th class="ps-3">Source</th><td>@Model.Source</td></tr>
+                <tr><th class="ps-3">Priority</th><td>@Model.Priority</td></tr>
+                <tr><th class="ps-3">Expected Value</th><td>@Fmt.Inr(Model.ExpectedValue)</td></tr>
+                <tr><th class="ps-3">Assigned To</th><td>@Model.AssignedUser?.FullName</td></tr>
+                <tr><th class="ps-3">Created</th><td>@Fmt.Dt(Model.CreatedDate)</td></tr>
+                <tr><th class="ps-3">Notes</th><td>@Model.Notes</td></tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card mb-3">
+            <div class="card-header">Follow-Ups</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Date</th><th>Subject</th><th>Status</th></tr>
+                @foreach (var f in Model.FollowUps.OrderByDescending(x => x.FollowUpDate))
+                {
+                    <tr><td class="ps-3">@Fmt.Dt(f.FollowUpDate)</td><td>@f.Subject</td><td>@f.Status</td></tr>
+                }
+            </table>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header">Activities</div>
+            <table class="table table-sm mb-0">
+                <tr><th class="ps-3">Date</th><th>Type</th><th>Subject</th></tr>
+                @foreach (var a in Model.Activities.OrderByDescending(x => x.ActivityDate))
+                {
+                    <tr><td class="ps-3">@Fmt.Dt(a.ActivityDate)</td><td>@a.ActivityType</td><td>@a.Subject</td></tr>
+                }
+            </table>
+        </div>
+        <partial name="_History" model="(List<AuditLog>)ViewBag.History" />
+    </div>
+</div>

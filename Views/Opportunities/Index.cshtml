@@ -1,0 +1,76 @@
+@model PagedResult<Opportunity>
+@{
+    ViewData["Title"] = "Opportunities";
+    var canDelete = User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Manager);
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Opportunities</h4>
+    <div class="d-flex gap-2">
+        <a asp-action="Pipeline" class="btn btn-outline-primary"><i class="bi bi-kanban"></i> Pipeline View</a>
+        <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Opportunity</a>
+    </div>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Search opportunity or customer..." /></div>
+    <div class="col-md-2">
+        <select name="stage" class="form-select" asp-items="@(new SelectList(Enum.GetNames<OpportunityStage>(), ViewBag.Stage?.ToString()))">
+            <option value="">All Stages</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="status" class="form-select" asp-items="@(new SelectList(new[] { "Open", "Won", "Lost" }, ViewBag.StatusFilter))">
+            <option value="">All Status</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select name="sort" class="form-select">
+            <option value="newest" selected="@(ViewBag.Sort == "newest")">Newest first</option>
+            <option value="close" selected="@(ViewBag.Sort == "close")">Close date</option>
+            <option value="name" selected="@(ViewBag.Sort == "name")">Name A-Z</option>
+        </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-outline-primary flex-fill"><i class="bi bi-search"></i></button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+            <tr><th>Opportunity</th><th>Customer</th><th>Stage</th><th>Amount</th><th>Prob.</th><th>Weighted</th><th>Close Date</th><th>Owner</th><th></th></tr>
+            </thead>
+            <tbody>
+            @if (!Model.Items.Any())
+            {
+                <tr><td colspan="9" class="text-center text-muted py-4">No opportunities found.</td></tr>
+            }
+            @foreach (var o in Model.Items)
+            {
+                <tr>
+                    <td><a asp-action="Details" asp-route-id="@o.OpportunityId">@o.OpportunityName</a></td>
+                    <td>@o.Customer?.CustomerName</td>
+                    <td><span class="badge @Fmt.Badge(o.Stage.ToString())">@o.Stage</span></td>
+                    <td>@Fmt.Inr(o.Amount)</td>
+                    <td>@o.Probability%</td>
+                    <td>@Fmt.Inr(o.WeightedAmount)</td>
+                    <td class="@(o.IsActive && o.ExpectedCloseDate < DateTime.Today ? "text-danger" : "")">@Fmt.Dt(o.ExpectedCloseDate)</td>
+                    <td>@o.AssignedUser?.FullName</td>
+                    <td class="text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@o.OpportunityId" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        @if (canDelete)
+                        {
+                            <form asp-action="Delete" asp-route-id="@o.OpportunityId" method="post" class="d-inline" data-confirm="Delete this opportunity?">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+<partial name="_Pager" model="Model" />

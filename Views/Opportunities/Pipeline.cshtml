@@ -1,0 +1,50 @@
+@model List<Opportunity>
+@{
+    ViewData["Title"] = "Sales Pipeline";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="m-0">Sales Pipeline</h4>
+    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Opportunity</a>
+</div>
+<div class="d-flex gap-3 overflow-auto pb-3">
+    @foreach (var stage in Enum.GetValues<OpportunityStage>())
+    {
+        var list = Model.Where(o => o.Stage == stage).ToList();
+        <div class="pipe-col flex-fill">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between">
+                    <span class="badge @Fmt.Badge(stage.ToString())">@stage</span>
+                    <small class="text-muted">@list.Count | @Fmt.Inr(list.Sum(o => o.Amount))</small>
+                </div>
+                <div class="card-body p-2 bg-light">
+                    @foreach (var o in list)
+                    {
+                        <div class="card pipe-card mb-2">
+                            <div class="card-body p-2">
+                                <a class="fw-semibold" asp-action="Details" asp-route-id="@o.OpportunityId">@o.OpportunityName</a>
+                                <div class="text-muted">@o.Customer?.CustomerName</div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <span>@Fmt.Inr(o.Amount)</span><span>@o.Probability%</span>
+                                </div>
+                                <div class="small text-muted">Close: @Fmt.Dt(o.ExpectedCloseDate) | @o.AssignedUser?.FullName</div>
+                                @if (o.IsActive)
+                                {
+                                    var next = stage switch
+                                    {
+                                        OpportunityStage.Qualification => OpportunityStage.Proposal,
+                                        OpportunityStage.Proposal => OpportunityStage.Negotiation,
+                                        _ => OpportunityStage.Won
+                                    };
+                                    <form asp-action="MoveStage" asp-route-id="@o.OpportunityId" method="post" class="mt-1">
+                                        <input type="hidden" name="stage" value="@next" />
+                                        <button class="btn btn-sm btn-outline-primary w-100 py-0">Move to @next &rarr;</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

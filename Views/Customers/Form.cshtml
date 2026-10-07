@@ -1,0 +1,75 @@
+@model CustomerFormVm
+@{
+    var isNew = Model.CustomerId == 0;
+    ViewData["Title"] = isNew ? "New Customer" : "Edit Customer";
+}
+<h4 class="mb-3">@ViewData["Title"]</h4>
+<div class="card">
+    <div class="card-body">
+        <form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.CustomerId)" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2"></div>
+            <input type="hidden" asp-for="CustomerId" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="CustomerName" class="form-label req"></label>
+                    <input asp-for="CustomerName" class="form-control" maxlength="100" />
+                    <span asp-validation-for="CustomerName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="CompanyName" class="form-label"></label>
+                    <input asp-for="CompanyName" class="form-control" maxlength="150" />
+                    <span asp-validation-for="CompanyName"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email" class="form-label req"></label>
+                    <input asp-for="Email" class="form-control" type="text" />
+                    <span asp-validation-for="Email"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Phone" class="form-label req"></label>
+                    <input asp-for="Phone" class="form-control" maxlength="10" placeholder="10 digit mobile no." />
+                    <span asp-validation-for="Phone"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Address" class="form-label"></label>
+                    <input asp-for="Address" class="form-control" maxlength="250" />
+                    <span asp-validation-for="Address"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="City" class="form-label"></label>
+                    <input asp-for="City" class="form-control" maxlength="60" />
+                    <span asp-validation-for="City"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="State" class="form-label"></label>
+                    <input asp-for="State" class="form-control" maxlength="60" />
+                    <span asp-validation-for="State"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Status" class="form-label req"></label>
+                    <select asp-for="Status" class="form-select" asp-items="@(new SelectList(Enum.GetNames<CustomerStatus>()))"></select>
+                    <span asp-validation-for="Status"></span>
+                </div>
+                @if (!User.IsSalesExecutive())
+                {
+                    <div class="col-md-6">
+                        <label asp-for="AssignedTo" class="form-label"></label>
+                        <select asp-for="AssignedTo" class="form-select" asp-items="ViewBag.Users">
+                            <option value="">-- Myself --</option>
+                        </select>
+                        <span asp-validation-for="AssignedTo"></span>
+                    </div>
+                }
+                <div class="col-12">
+                    <label asp-for="Notes" class="form-label"></label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" maxlength="1000"></textarea>
+                    <span asp-validation-for="Notes"></span>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary"><i class="bi bi-save"></i> Save</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
